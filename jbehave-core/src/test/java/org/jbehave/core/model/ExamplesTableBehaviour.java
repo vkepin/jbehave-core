@@ -21,6 +21,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jbehave.core.annotations.AsParameters;
 import org.jbehave.core.annotations.Parameter;
+import org.jbehave.core.i18n.LocalizedKeywords;
+import org.jbehave.core.io.LoadFromClasspath;
+import org.jbehave.core.io.ResourceLoader;
 import org.jbehave.core.model.ExamplesTable.RowNotFound;
 import org.jbehave.core.model.TableTransformers.TableTransformer;
 import org.jbehave.core.steps.ConvertedParameters.ValueNotFound;
@@ -196,8 +199,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldParseTableAsLandscape() {
         String tableWithProperties = "{transformer=FROM_LANDSCAPE}\n" + landscapeTableAsString;
-        TableTransformers tableTransformers = new TableTransformers();
-        ExamplesTable table = new ExamplesTableFactory(tableTransformers).createExamplesTable(tableWithProperties);
+        ExamplesTable table = newExamplesTableFactory().createExamplesTable(tableWithProperties);
         Properties properties = table.getProperties();
         assertThat(properties.getProperty("transformer"), equalTo("FROM_LANDSCAPE"));
         ensureColumnOrderIsPreserved(table);
@@ -215,7 +217,8 @@ public class ExamplesTableBehaviour {
             }
 
         });
-        ExamplesTable table = new ExamplesTableFactory(tableTransformers).createExamplesTable(tableWithProperties);
+        ExamplesTable table = new ExamplesTableFactory(new LocalizedKeywords(), newResourceLoader(),
+                new ParameterConverters(), tableTransformers).createExamplesTable(tableWithProperties);
         Properties properties = table.getProperties();
         assertThat(properties.getProperty("transformer"), equalTo("myTransformer"));
         ensureWhitespaceIsPreserved(table);
@@ -260,7 +263,8 @@ public class ExamplesTableBehaviour {
         // Given
         ParameterConverters parameterConverters = new ParameterConverters();
         parameterConverters.addConverters(new MethodReturningConverter(methodFor("convertDate"), this));
-        ExamplesTableFactory factory = new ExamplesTableFactory(parameterConverters);
+        ExamplesTableFactory factory = new ExamplesTableFactory(new LocalizedKeywords(), newResourceLoader(),
+                parameterConverters);
 
         // When
         String tableAsString = "|one|two|\n|11|22|\n|1/1/2010|2/2/2010|";
@@ -280,7 +284,8 @@ public class ExamplesTableBehaviour {
         // Given
         ParameterConverters parameterConverters = new ParameterConverters();
         parameterConverters.addConverters(new MethodReturningConverter(methodFor("convertDate"), this));
-        ExamplesTableFactory factory = new ExamplesTableFactory(parameterConverters);
+        ExamplesTableFactory factory = new ExamplesTableFactory(new LocalizedKeywords(), newResourceLoader(),
+                parameterConverters);
 
         // When
         String tableDefaultsAsString = "|three|\n|99|";
@@ -318,7 +323,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldReplaceNamedParameterValues() throws Exception {
         // Given
-        ExamplesTableFactory factory = new ExamplesTableFactory();
+        ExamplesTableFactory factory = newExamplesTableFactory();
 
         // When
         String tableAsString = "|Name|Value|\n|name1|<value>|";
@@ -342,7 +347,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldKeepExactValueInReplacedNamedParameterValues() throws Exception {
         // Given
-        ExamplesTableFactory factory = new ExamplesTableFactory();
+        ExamplesTableFactory factory = newExamplesTableFactory();
         String problematicNamedParameterValueCharacters = "value having the \\ backslash and the $ dollar character";
 
         // When
@@ -362,7 +367,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldMapParametersToType() throws Exception {
         // Given
-        ExamplesTableFactory factory = new ExamplesTableFactory();
+        ExamplesTableFactory factory = newExamplesTableFactory();
 
         // When
         String tableAsString = "|string|integer|stringList|integerList|\n|11|22|1,1|2,2|";
@@ -380,7 +385,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldMapParametersToTypeWithFieldMappings() throws Exception {
         // Given
-        ExamplesTableFactory factory = new ExamplesTableFactory();
+        ExamplesTableFactory factory = newExamplesTableFactory();
 
         // When
         String tableAsString = "|aString|anInteger|aStringList|anIntegerList|\n|11|22|1,1|2,2|";
@@ -404,7 +409,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldMapParametersToTypeWithAnnotatedFields() throws Exception {
         // Given
-        ExamplesTableFactory factory = new ExamplesTableFactory();
+        ExamplesTableFactory factory = newExamplesTableFactory();
 
         // When
         String tableAsString = "|aString|anInteger|aStringList|anIntegerList|\n|11|22|1,1|2,2|";
@@ -422,8 +427,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldThrowExceptionIfValuesOrRowsAreNotFound() throws Exception {
         // Given
-        ParameterConverters parameterConverters = new ParameterConverters();
-        ExamplesTableFactory factory = new ExamplesTableFactory(parameterConverters);
+        ExamplesTableFactory factory = newExamplesTableFactory();
 
         // When
         String tableAsString = "|one|two|\n|11|22|\n";
@@ -450,8 +454,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldAllowAdditionAndModificationOfRowValues() throws Exception {
         // Given
-        ParameterConverters parameterConverters = new ParameterConverters();
-        ExamplesTableFactory factory = new ExamplesTableFactory(parameterConverters);
+        ExamplesTableFactory factory = newExamplesTableFactory();
 
         // When
         String tableAsString = "|one|two|\n|11|12|\n|21|22|";
@@ -479,8 +482,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldAllowBuildingOfTableFromContent() throws Exception {
         // Given
-        ParameterConverters parameterConverters = new ParameterConverters();
-        ExamplesTableFactory factory = new ExamplesTableFactory(parameterConverters);
+        ExamplesTableFactory factory = newExamplesTableFactory();
 
         // When
         String tableAsString = "|one|two|\n|11|12|\n|21|22|";
@@ -497,8 +499,7 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldAllowOutputToPrintStream() throws Exception {
         // Given
-        ParameterConverters parameterConverters = new ParameterConverters();
-        ExamplesTableFactory factory = new ExamplesTableFactory(parameterConverters);
+        ExamplesTableFactory factory = newExamplesTableFactory();
 
         // When
         String tableAsString = "|one|two|\n|11|12|\n|21|22|\n";
@@ -532,6 +533,16 @@ public class ExamplesTableBehaviour {
     public void shouldHandleWrongNumberOfColumns() {
         assertTableAsString("|a|b|\n|a|\n", "|a|b|\n|a||\n");
         assertTableAsString("|a|b|\n|a|b|c|\n", "|a|b|\n|a|b|\n");
+    }
+
+    private ExamplesTableFactory newExamplesTableFactory()
+    {
+        return new ExamplesTableFactory(new LocalizedKeywords(), newResourceLoader(), new ParameterConverters());
+    }
+
+    private ResourceLoader newResourceLoader()
+    {
+        return new LoadFromClasspath();
     }
 
     private void assertTableAsString(String tableAsString, String expectedTableAsString) {
