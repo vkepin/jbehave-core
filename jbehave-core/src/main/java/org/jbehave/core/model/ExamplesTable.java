@@ -20,6 +20,7 @@ import org.jbehave.core.annotations.Parameter;
 import org.jbehave.core.model.TableTransformers.TableTransformer;
 import org.jbehave.core.steps.ChainedRow;
 import org.jbehave.core.steps.ConvertedParameters;
+import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.Parameters;
 import org.jbehave.core.steps.Row;
@@ -171,25 +172,30 @@ public class ExamplesTable {
     private ExamplesTableProperties properties;
     private String propertiesAsString = "";
     private Map<String, String> namedParameters = new HashMap<String, String>();
+    private ParameterControls parameterControls;
 
     public ExamplesTable(String tableAsString) {
-        this(tableAsString, HEADER_SEPARATOR, VALUE_SEPARATOR);
-    }
-
-    public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator) {
-        this(tableAsString, headerSeparator, valueSeparator, IGNORABLE_SEPARATOR, new ParameterConverters());
+        this(tableAsString, HEADER_SEPARATOR, VALUE_SEPARATOR, new ParameterControls());
     }
 
     public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator,
-            String ignorableSeparator, ParameterConverters parameterConverters) {
-        this(tableAsString, headerSeparator, valueSeparator, ignorableSeparator, parameterConverters,
+            ParameterControls parameterControls) {
+        this(tableAsString, headerSeparator, valueSeparator, IGNORABLE_SEPARATOR, new ParameterConverters(),
+                parameterControls);
+    }
+
+    public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator,
+            String ignorableSeparator, ParameterConverters parameterConverters, ParameterControls parameterControls) {
+        this(tableAsString, headerSeparator, valueSeparator, ignorableSeparator, parameterConverters, parameterControls,
                 new TableTransformers());
     }
 
-    public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator,
-            String ignorableSeparator, ParameterConverters parameterConverters, TableTransformers tableTransformers) {
+    public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator, String ignorableSeparator,
+            ParameterConverters parameterConverters, ParameterControls parameterControls,
+            TableTransformers tableTransformers) {
         this.tableAsString = tableAsString;
         this.parameterConverters = parameterConverters;
+        this.parameterControls = parameterControls;
         this.tableTransformers = tableTransformers;
         this.defaults = new ConvertedParameters(EMPTY_MAP, parameterConverters);
         parse(headerSeparator, valueSeparator, ignorableSeparator);
@@ -308,16 +314,16 @@ public class ExamplesTable {
 
     public Parameters getRowAsParameters(int row, boolean replaceNamedParameters) {
         Map<String, String> rowValues = getRow(row);
-        return createParameters((replaceNamedParameters ? replaceNamedParameters(rowValues) : rowValues));
+        return createParameters(replaceNamedParameters ? replaceNamedParameters(rowValues) : rowValues);
     }
 
     private Map<String, String> replaceNamedParameters(Map<String, String> row) {
         Map<String, String> replaced = new LinkedHashMap<String, String>();
         for (Entry<String, String> rowEntry : row.entrySet()) {
             String replacedValue = rowEntry.getValue();
-            for (String namedKey : namedParameters.keySet()) {
-                String namedValue = namedParameters.get(namedKey);
-                replacedValue = replacedValue.replaceAll(namedKey, Matcher.quoteReplacement(namedValue));
+            for (Entry<String, String> namedParameter : namedParameters.entrySet()) {
+                replacedValue = replacedValue.replaceAll(parameterControls.createDelimitedName(namedParameter.getKey()),
+                        Matcher.quoteReplacement(namedParameter.getValue()));
             }
             replaced.put(rowEntry.getKey(), replacedValue);
         }
@@ -454,19 +460,15 @@ public class ExamplesTable {
 
     @SuppressWarnings("serial")
     public static class RowNotFound extends RuntimeException {
-
         public RowNotFound(int row) {
             super(Integer.toString(row));
         }
-
     }
 
     @SuppressWarnings("serial")
     public static class ParametersNotMappableToType extends RuntimeException {
-
         public ParametersNotMappableToType(Parameters parameters, Class<?> type, Exception e) {
             super(parameters.values() + " not mappable to type " + type, e);
         }
-
     }
 }
