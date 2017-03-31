@@ -23,6 +23,7 @@ import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.StoryFinder;
 import org.jbehave.core.junit.JUnitStories;
 import org.jbehave.core.model.ExamplesTableFactory;
+import org.jbehave.core.model.TableTransformers;
 import org.jbehave.core.parsers.RegexPrefixCapturingPatternParser;
 import org.jbehave.core.parsers.RegexStoryParser;
 import org.jbehave.core.reporters.ContextOutput;
@@ -92,10 +93,11 @@ public class CoreStories extends JUnitStories {
         ParameterConverters parameterConverters = new ParameterConverters();
         LoadFromClasspath resourceLoader = new LoadFromClasspath(embeddableClass);
         ParameterControls parameterControls = new ParameterControls();
+        TableTransformers tableTransformers = new TableTransformers();
         // factory to allow parameter conversion and loading from external
         // resources (used by StoryParser too)
         ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
-                resourceLoader, parameterConverters, parameterControls);
+                resourceLoader, parameterConverters, parameterControls, tableTransformers);
         // add custom converters
         parameterConverters.addConverters(new DateConverter(new SimpleDateFormat("yyyy-MM-dd")),
                 new ExamplesTableConverter(examplesTableFactory));
@@ -109,6 +111,7 @@ public class CoreStories extends JUnitStories {
                                 .withFailureTraceCompression(true).withCrossReference(xref))
                 .useParameterConverters(parameterConverters)
                 .useParameterControls(parameterControls)
+                .useTableTransformers(tableTransformers)
                 // use '%' instead of '$' to identify parameters
                 .useStepPatternParser(new RegexPrefixCapturingPatternParser("%"))
                 .useStepMonitor(contextStepMonitor);

@@ -27,6 +27,7 @@ import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.ExamplesTableFactory;
+import org.jbehave.core.model.TableTransformers;
 import org.jbehave.core.steps.CandidateSteps;
 import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
@@ -263,8 +264,8 @@ public class NeedleAnnotationBuilderBehaviour {
 			ParameterConverters.ExamplesTableConverter {
 
 		public MyExampleTableConverter() {
-            super(new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(),
-                    new ParameterConverters(), new ParameterControls()));
+            super(new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(), new ParameterConverters(),
+                    new ParameterControls(), new TableTransformers()));
 		}
 
 	}

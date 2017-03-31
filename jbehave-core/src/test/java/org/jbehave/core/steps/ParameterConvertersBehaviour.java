@@ -26,6 +26,7 @@ import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.ExamplesTableFactory;
+import org.jbehave.core.model.TableTransformers;
 import org.jbehave.core.steps.ParameterConverters.BooleanConverter;
 import org.jbehave.core.steps.ParameterConverters.BooleanListConverter;
 import org.jbehave.core.steps.ParameterConverters.DateConverter;
@@ -421,10 +422,9 @@ public class ParameterConvertersBehaviour {
         assertThat(parameters.col2, equalTo("row12"));
     }
 
-    private ExamplesTableFactory newExamplesTableFactory()
-    {
+    private ExamplesTableFactory newExamplesTableFactory() {
         return new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(), new ParameterConverters(),
-                new ParameterControls());
+                new ParameterControls(), new TableTransformers());
     }
 
     @Test

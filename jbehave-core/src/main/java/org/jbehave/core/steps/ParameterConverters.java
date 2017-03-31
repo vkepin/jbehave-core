@@ -27,7 +27,6 @@ import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.ExamplesTableFactory;
 import org.jbehave.core.model.JsonFactory;
-import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
 
 import static java.util.Arrays.asList;
@@ -124,7 +123,8 @@ public class ParameterConverters {
     protected ParameterConverter[] defaultConverters(Configuration configuration, Locale locale, String listSeparator) {
         String escapedListSeparator = escapeRegexPunctuation(listSeparator);
         ExamplesTableFactory tableFactory = new ExamplesTableFactory(configuration.keywords(),
-                configuration.storyLoader(), this, configuration.parameterControls());
+                configuration.storyLoader(), this, configuration.parameterControls(),
+                configuration.tableTransformers());
         JsonFactory jsonFactory = new JsonFactory(this);
         ParameterConverter[] defaultConverters = { new BooleanConverter(),
                 new NumberConverter(NumberFormat.getInstance(locale)),

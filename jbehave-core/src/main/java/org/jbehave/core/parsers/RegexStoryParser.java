@@ -43,13 +43,16 @@ public class RegexStoryParser implements StoryParser {
     public RegexStoryParser(Configuration configuration) {
         this.keywords = configuration.keywords();
         this.tableFactory = new ExamplesTableFactory(configuration.keywords(), configuration.storyLoader(),
-                configuration.parameterConverters(), configuration.parameterControls());
+                configuration.parameterConverters(), configuration.parameterControls(),
+                configuration.tableTransformers());
     }
 
+    @Override
     public Story parseStory(String storyAsText) {
         return parseStory(storyAsText, null);
     }
 
+    @Override
     public Story parseStory(String storyAsText, String storyPath) {
         Description description = parseDescriptionFrom(storyAsText);
         Meta meta = parseStoryMetaFrom(storyAsText);

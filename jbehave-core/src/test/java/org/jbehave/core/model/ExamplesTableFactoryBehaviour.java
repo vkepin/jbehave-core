@@ -71,9 +71,8 @@ public class ExamplesTableFactoryBehaviour {
         assertThat(examplesTable.asString(), equalTo(FILTERED_TABLE_WITH_INLINED_SEPARATTORS));
     }
 
-    private ExamplesTableFactory newExamplesTableFactory(ResourceLoader resourceLoader)
-    {
+    private ExamplesTableFactory newExamplesTableFactory(ResourceLoader resourceLoader) {
         return new ExamplesTableFactory(new LocalizedKeywords(), resourceLoader, new ParameterConverters(),
-                new ParameterControls());
+                new ParameterControls(), new TableTransformers());
     }
 }
